@@ -37,12 +37,25 @@ var argv = require('yargs')
 
 const client = new SimpleXmlRpcClient(SERVER_HOST, SERVER_PORT, SERVER_PATH);
 
+const scrub = (response) => {
+    if(response.requestXml)response.requestXml = response.requestXml.replaceAll('\"', '\'');
+    if(response.responseXml)response.responseXml = response.responseXml.replaceAll('\"', '\'');
+    if (typeof response.data === 'string')response.data = response.data.replaceAll('\"', '\'');
+
+    return response;
+}
+
+String.prototype.replaceAll = function(search, replacement) {
+    const target = this;
+    return target.replace(new RegExp(search, 'g'), replacement);
+}
+
 const mathCallback = (err, response) => {
-    console.log(JSON.stringify(response,null, JSON_SPACE))
+    console.log(JSON.stringify(scrub(response),null, JSON_SPACE));
 };
 
 const chatterCallback = (err, response) => {
-    console.log(response,null, JSON_SPACE)
+    console.log(JSON.stringify(scrub(response),null, JSON_SPACE));
 };
 
 const argMathError = (op) => {
@@ -107,7 +120,8 @@ const chatter = (config) => {
 const ping = (config) => {
     const callback = (err, response) => {
         response.date = new Date();
-        console.log(JSON.stringify(response,null, JSON_SPACE))
+
+        console.log(JSON.stringify(scrub(response),null, JSON_SPACE));
     }
     const message  =  config.message;
     const verbose = config.verbose;
